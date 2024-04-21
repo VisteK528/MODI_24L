@@ -9,11 +9,11 @@ alpha2 = 0.19;
 alpha3 = 1.5;
 alpha4 = 0.95;
 
-u_min = -1;
+u_min = 0;
 u_max = 1;
 u_step_time = 10;
 
-T = 0.01;
+T = 0.1;
 
-lin_point = 0.8;
+lin_point = 1;
 t_fin = 90;

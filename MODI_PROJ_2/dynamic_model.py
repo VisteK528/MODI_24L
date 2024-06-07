@@ -21,8 +21,12 @@ def get_model_coefficients(x: np.ndarray, y: np.ndarray, polynomial_order: int, 
     return w
 
 
-def get_model_output(x: np.ndarray, y: np.ndarray, weights: np.ndarray, polynomial_order: int, rank: int) -> np.ndarray:
+def get_model_output(x: np.ndarray, y: np.ndarray, weights: np.ndarray, polynomial_order: int, rank: int, recursive=False) -> np.ndarray:
     y_mod = np.zeros(len(x))
+
+    if recursive:
+        for i in range(rank):
+            y_mod[i] = y[i]
 
     for k in range(rank, len(y)):
         u_part = 0
@@ -33,8 +37,12 @@ def get_model_output(x: np.ndarray, y: np.ndarray, weights: np.ndarray, polynomi
         y_part = 0
         for j in range(rank):
             batch_weights = weights[rank * polynomial_order + j*polynomial_order: rank * polynomial_order + (j+1)*polynomial_order]
-            y_part += np.sum(
-                [w * pow(y[k-j-1], i) for i, w in enumerate(batch_weights, start=1)])
+            if recursive:
+                y_part += np.sum(
+                    [w * pow(y_mod[k - j - 1], i) for i, w in enumerate(batch_weights, start=1)])
+            else:
+                y_part += np.sum(
+                    [w * pow(y[k - j - 1], i) for i, w in enumerate(batch_weights, start=1)])
         y_mod[k] = u_part + y_part
 
     return y_mod
@@ -53,21 +61,32 @@ if __name__ == "__main__":
     k = np.linspace(0, len(valid_x), len(valid_x))
 
     for i in range(3):
-        poly_order = 2
+        poly_order = 4
         rank = 1 + i
 
         weights = get_model_coefficients(train_x, train_y, poly_order, rank)
         y_mod = get_model_output(train_x, train_y, weights, poly_order, rank)
+        y_mod_recursive = get_model_output(train_x, train_y, weights, poly_order, rank, recursive=True)
 
-        plt.plot(k, train_y)
-        plt.plot(k, y_mod)
+        plt.plot(k, train_y, label="Validation data")
+        plt.plot(k, y_mod, label="Non-Recursive model")
+
+        plt.plot(k, y_mod_recursive, label="Recursive model")
+        plt.title(f"Train Poly: {poly_order}    Rank: {rank}")
+        plt.legend()
         plt.show()
-
-        plt.plot(k, valid_y)
 
         y_mod_valid = get_model_output(valid_x, valid_y, weights, poly_order, rank)
-        plt.plot(k, y_mod_valid)
+        y_mod_recursive_valid = get_model_output(valid_x, valid_y, weights, poly_order, rank, recursive=True)
+
+        plt.plot(k, valid_y, label="Validation data")
+        plt.plot(k, y_mod_valid, label="Non-Recursive model")
+
+        plt.plot(k, y_mod_recursive_valid, label="Recursive model", linestyle="--")
+        plt.title(f"Validation Poly: {poly_order}    Rank: {rank}")
+        plt.legend()
         plt.show()
 
-        print(f"Train\t    Poly order: {poly_order}\t Rank: {rank}\tMSE: {mse(train_y, y_mod):.5f}")
-        print(f"Validate\tPoly order: {poly_order}\t Rank: {rank}\tMSE: {mse(valid_y, y_mod_valid):.5f}")
+        print(f"Train\t            Poly order: {poly_order}\t Rank: {rank}\tMSE: {mse(train_y, y_mod):.5f}")
+        print(f"Validate\t        Poly order: {poly_order}\t Rank: {rank}\tMSE: {mse(valid_y, y_mod_valid):.5f}")
+        print(f"Validate recursive\tPoly order: {poly_order}\t Rank: {rank}\tMSE: {mse(valid_y, y_mod_recursive_valid):.5f}")

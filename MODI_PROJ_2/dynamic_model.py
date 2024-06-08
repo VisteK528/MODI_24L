@@ -13,7 +13,7 @@ def matrix_part(data: np.ndarray, polynomial_order: int):
 def get_model_coefficients(x: np.ndarray, y: np.ndarray, polynomial_order: int, rank: int) -> np.ndarray:
     Y = y[rank:]
 
-    M_u = np.array([matrix_part(x[rank - i:-i], polynomial_order) for i in range(1, rank+1)]).reshape((polynomial_order*rank, len(Y)))
+    M_u = np.array([matrix_part(x[rank - i:- i], polynomial_order) for i in range(1, rank+1)]).reshape((polynomial_order*rank, len(Y)))
     M_y = np.array([matrix_part(y[rank - i:- i], polynomial_order) for i in range(1, rank+1)]).reshape((polynomial_order*rank, len(Y)))
     M = np.concatenate((M_u.T, M_y.T), axis=1)
 

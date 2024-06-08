@@ -16,16 +16,24 @@ def create_static_model(x: np.ndarray, y: np.ndarray, polynomial_order: int):
 if __name__ == "__main__":
     data = load_data("data/danestat48.txt")
 
-    sorted_data = np.array(sorted(data, key=lambda x: x[0]))
-    x = sorted_data[:, 0]
-    y = sorted_data[:, 1]
+    train = data[::2]
+    test = data[1::2]
+    x_train = train[:, 0]
+    y_train = train[:, 1]
 
-    # Test polynomials
-    for i in range(2, 3):
-        model = create_static_model(x, y, i)
+    x_test = test[:, 0]
+    y_test = test[:, 1]
+
+    # Train data
+    plt.scatter(x_train)
+
+
+    """# Test polynomials
+    for i in range(1, 6):
+        model = create_static_model(x_train, y_train, i)
         u = np.linspace(-1, 1, 200)
-        y_mod = model(u)
-        print(f"Poly order: {i}\tMSE: {mse(y, y_mod):.5f}")
-        plt.scatter(x, y)
-        plt.scatter(u, y_mod)
-        plt.show()
+        y_mod = model(x_test)
+        print(f"Poly order: {i}\tMSE: {mse(y_test, y_mod):.5f}")
+        plt.scatter(x_test, y_mod)
+        plt.scatter(x_test, y_test)
+        plt.show()"""
